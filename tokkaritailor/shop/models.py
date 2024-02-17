@@ -4,6 +4,7 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=200, db_index=True)
     slug = models.SlugField(max_length=200, db_index=True, unique=True)
+    parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, null=True, blank=True) 
 
     class Meta:
         ordering = ('name',)

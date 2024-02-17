@@ -1,0 +1,48 @@
+{% extends 'base.html' %}  
+{% load static %}  jrt
+
+{% block title %}
+Корзина - ZALUSHOP
+{% endblock %}
+
+{% block content %}
+<div class="container cart">
+    <h2>Ваша корзина</h2>
+    <table class="cart-table">
+        <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+            <th>Цена за единицу</th>
+            <th>Стоимость</th>
+            <th></th> {# Колонка для кнопок удаления #}
+        </tr>
+        {% for item in cart.items.all %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.product.price }}</td>
+            <td>{{ item.total_price }}</td>
+            <td>
+                {# Форма для удаления товара из корзины #}
+                <form action="{% url 'cart:remove' item.product.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="remove-item-btn">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Ваша корзина пуста</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div class="cart-total">
+        <strong>Общая стоимость:</strong> {{ cart.get_total_price }}
+    </div>
+    <div class="cart-actions">
+        <a href="/shop/" class="continue-shopping-btn">Продолжить покупки</a>
+        {# Ссылка на оформление заказа #}
+        <a href="/shop/" class="checkout-btn">Оформить заказ</a> 
+    </div>
+</div>
+{% endblock %}

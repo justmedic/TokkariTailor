@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+<div class="slider" style="position: relative; max-width: 500px; overflow: hidden;">
+  <div class="slider-content" style="display: flex;">
+    {% for image in product.images.all %}
+    <img src="{{ image.image.url }}" alt="{{ product.name }}" style="max-width: 100%; height: auto; flex-shrink: 0;">
+    {% endfor %}
+  </div>
+  <button id="scrollLeft" style="position: absolute; top: 50%; left: 10px; transform: translate(0, -50%); font-size: 24px; border-radius: 50%; cursor: pointer;">&#8592;</button>
+  <button id="scrollRight" style="position: absolute; top: 50%; right: 10px; transform: translate(0, -50%); font-size: 24px; border-radius: 50%; cursor: pointer;">&#8594;</button>
+</div>
+<p class="product-price">{{ product.price }} руб.</p>
+<p>{{ product.description }}</p>
+<form action="{% url 'cart:cart_add' product.id %}" method="post">
+  {% csrf_token %}
+  <input type="submit" value="Добавить в корзину" class="btn">
+</form>
+{% endblock content %}
+
+{% block extrajs %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    let currentIndex = 0; 
+    const images = document.querySelectorAll('.slider-content img');
+    const totalImages = images.length;
+    const sliderContent = document.querySelector('.slider-content');
+
+    images.forEach((img, index) => {
+      img.style.transform = 'translateX(${index * 100}%)';
+      img.style.transition = 'transform 0.5s ease-out'; 
+    });
+
+   
+    document.getElementById('scrollRight').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % totalImages; 
+      updateSlider();
+    });
+
+    document.getElementById('scrollLeft').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + totalImages) % totalImages; 
+      updateSlider();
+    });
+
+    function updateSlider() {
+      sliderContent.style.transform = 'translateX(-${currentIndex * 100}%';
+    }
+  });
+</script>
+{% endblock %}

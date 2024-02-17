@@ -1,0 +1,153 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto; 
+    padding-bottom: 50px; 
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: auto;
+        padding: 0 40px; 
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: auto;
+        padding: 0 75px; 
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+}
+
+header nav {
+    background: #000000;
+    color: #fff;
+    padding: 10px 0;
+}
+
+header nav h1 {
+    float: left;
+    margin-left: 20px;
+}
+
+header nav ul {
+    list-style: none;
+    float: right;
+}
+
+header nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.hero {
+    padding: 20px 0;
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #000000;
+    color: #fff;
+    text-decoration: none;
+    margin-top: 20px;
+}
+
+footer {
+    background: #000000;
+    color: #ffffff;
+    text-align: center;
+    flex-shrink: 0;
+    padding: 10px 0;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 20px; 
+    padding: 20px; 
+}
+.product-card {
+    flex: 0 0 auto;
+    width: 280px; 
+    margin: 20px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .product-card {
+        margin: 10px;
+        width: auto; 
+    }
+}
+
+.product-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-top-left-radius: 5px; 
+    border-top-right-radius: 5px;
+}
+
+.product-info {
+    padding: 10px;
+    text-align: center;
+    overflow: auto; 
+}
+
+.product-name, .product-price {
+    margin: 10px 0;
+}
+
+.product-price {
+    font-weight: bold;
+}
+
+.category-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 20px; 
+}

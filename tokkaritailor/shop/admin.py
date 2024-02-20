@@ -6,7 +6,6 @@ class ProductImageInline(admin.TabularInline):
     extra = 1 
 
 class CategoryAdmin(admin.ModelAdmin):
-<<<<<<< HEAD
     list_display = ['name', 'slug', 'parent', 'id']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'id']
@@ -15,10 +14,6 @@ class CategoryAdmin(admin.ModelAdmin):
         if db_field.name == "parent":
             kwargs["queryset"] = Category.objects.filter(parent__isnull=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-=======
-    list_display = ['name', 'slug']
-    prepopulated_fields = {'slug': ('name',)}
->>>>>>> bdef2481c09fdabedacf995695ae833dab76ac38
 
 
 class ProductAdmin(admin.ModelAdmin):

@@ -1,25 +1,27 @@
 from rest_framework import serializers
 from shop.models import Category, Product, ProductImage
 
-
-class CategorySerializer(serializers.ModelSerializer):
-    children = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'slug', 'parent', 'children']
-
-class ProductSerializer(serializers.ModelSerializer):
-    images = serializers.SlugRelatedField(many=True, read_only=True, slug_field='image.url')
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'slug', 'description', 'price', 'stock', 'available', 'created', 'updated', 'category', 'category_id', 'images']
-
 class ProductImageSerializer(serializers.ModelSerializer):
-    product_id = serializers.IntegerField(write_only=True)
-    
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'created', 'updated', 'product_id']
+        fields = ['image']
+
+class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    class Meta:
+        model = Product
+        fields = ['category', 'name', 'slug', 'description', 'price', 'stock', 'available', 'created', 'updated', 'images']
+
+class CategorySerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='category-detail', read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'parent', 'url']
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True, read_only=True)
+    children = CategorySerializer(many=True, read_only=True)
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug', 'parent', 'children', 'products']

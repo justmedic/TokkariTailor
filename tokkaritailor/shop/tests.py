@@ -2,7 +2,8 @@ from django.test import TestCase
 from .models import Category, Product
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
+from django.contrib.auth.models import User
 
 class CategoryModelTest(TestCase):
     """Тестирование иерархии категорий."""
@@ -46,6 +47,9 @@ class ProductModelTest(TestCase):
 class CategoryProductTests(APITestCase):
 
     def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client = APIClient()
+        self.client.login(username='testuser', password='testpassword')
         self.category = Category.objects.create(name='Electronics', slug='electronics')
         self.product = Product.objects.create(category=self.category, name='Laptop', slug='laptop', description='A powerful laptop.', price=1000.00, stock=50, available=True)
 
@@ -55,7 +59,7 @@ class CategoryProductTests(APITestCase):
         """
         url = reverse('category-list')  
         data = {'name': 'Books', 'slug': 'books'}
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', enforce_csrf_checks=False)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Category.objects.count(), 2)
         self.assertEqual(Category.objects.get(id=2).name, 'Books')
@@ -74,7 +78,7 @@ class CategoryProductTests(APITestCase):
             'stock': 30,
             'available': True
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', enforce_csrf_checks=False)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Product.objects.count(), 2)
         self.assertEqual(Product.objects.get(id=2).name, 'Smartphone')
@@ -84,7 +88,7 @@ class CategoryProductTests(APITestCase):
         тест список категорий
         """
         url = reverse('category-list') 
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format='json', enforce_csrf_checks=False)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  
         self.assertEqual(response.data[0]['name'], 'Electronics')
@@ -94,7 +98,7 @@ class CategoryProductTests(APITestCase):
         тест списка продуктов
         """
         url = reverse('product-list')  
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format='json', enforce_csrf_checks=False)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  
         self.assertEqual(response.data[0]['name'], 'Laptop')

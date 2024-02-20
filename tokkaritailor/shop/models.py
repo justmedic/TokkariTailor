@@ -4,7 +4,7 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=200, db_index=True)
     slug = models.SlugField(max_length=200, db_index=True, unique=True)
-    parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, null=True, blank=True) 
+    parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, null=True, blank=True) #структура наследования категорий товаров, типо : одежда -> зимняя одежда -> куртки -> куртка модель 1
 
     class Meta:
         ordering = ('name',)

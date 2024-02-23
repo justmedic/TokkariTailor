@@ -1,5 +1,23 @@
 from django.contrib import admin
 from .models import Category, Product, ProductImage
+from django_json_widget.widgets import JSONEditorWidget  
+from django.db import models
+from django.apps import apps
+from django.core.exceptions import FieldDoesNotExist
+
+def extract_characteristics_templates(model_name):
+    """
+    Извлекает json шаблон характеристик из категории для товара на этапе создания через админку
+    """
+    Model = apps.get_model('shop', model_name)
+    try:
+        Model._meta.get_field('characteristics_template')
+    except FieldDoesNotExist:
+        return
+    objects = Model.objects.all()
+    return objects
+
+
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -9,6 +27,9 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'parent', 'id']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name', 'id']
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},  # Редактор JSON для fields
+}
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "parent":
@@ -17,10 +38,42 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class ProductAdmin(admin.ModelAdmin):
+
     list_display = ['name', 'slug', 'price', 'stock', 'available', 'created', 'updated']
     list_filter = ['available', 'created', 'updated']
     list_editable = ['price', 'stock', 'available']
     prepopulated_fields = {'slug': ('name',)}
+    inlines = [ProductImageInline]  
+
+    def get_changeform_initial_data(self, request):
+
+        """
+        Метод для обработки изменения формы
+        """
+
+        initial = super().get_changeform_initial_data(request)
+        category_id = request.GET.get('category')
+
+        if category_id:
+            try:
+                category = Category.objects.get(pk=category_id)
+                initial['characteristics'] = category.characteristics_template
+            except Category.DoesNotExist:
+                pass
+
+        return initial
+
+
+    def add_view(self, request, form_url='', extra_context=None):
+        
+        """
+        Динамическое добавление query параметра в URL для новых товаров в категории
+        """
+
+        category_id = request.GET.get('category')
+        if category_id:
+            form_url += '?category=' + category_id
+        return super().add_view(request, form_url, extra_context)
 
 
 admin.site.register(Category, CategoryAdmin)    

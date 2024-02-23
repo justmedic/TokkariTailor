@@ -10,7 +10,7 @@ class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     class Meta:
         model = Product
-        fields = ['category', 'name', 'slug', 'description', 'price', 'stock', 'available', 'created', 'updated', 'images']
+        fields = ['category', 'name', 'slug', 'description', 'characteristics', 'price', 'stock', 'available', 'created', 'updated', 'images']
 
 class CategorySerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='category-detail', read_only=True)
@@ -24,4 +24,4 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
     children = CategorySerializer(many=True, read_only=True)
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'parent', 'children', 'products']
+        fields = ['id', 'name', 'slug', 'parent', 'children', 'characteristics_template', 'products']

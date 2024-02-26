@@ -1,3 +1,8 @@
 from django.db import models
 
-# Create your models here.
+class HomePageImage(models.Model):
+    image = models.ImageField(upload_to='home_images/')
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.description or "Home Page Image"

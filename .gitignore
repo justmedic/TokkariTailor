@@ -1,0 +1,16 @@
+
+__pycache__/
+db.sqlite3
+db.sqlite3-journal
+.python-version
+__pypackages__/
+
+# Environments
+.env
+.env.local
+.env.d/
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/

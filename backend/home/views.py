@@ -11,11 +11,19 @@ class HomeAPIView(APIView):
     def get(self, request, *args, **kwargs):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, context={'request': request}, many=True)
+        
+        is_authenticated = request.user.is_authenticated
+
         data = {
             'category_list': serializer.data,
             'catalog_url': f'{settings.SITE_URL}/shop/',
-            'accaunts_url' : f'None',
+            'user_reg' : f'{settings.SITE_URL}/accounts/user/register',
+            'user_log' : f'{settings.SITE_URL}/accounts/user/login',
+            'user_logount' : f'{settings.SITE_URL}/accounts/user/logout_user',
             'cart_url' : f'None',
             'contats_url' :f'None',
+            'is_authenticated': is_authenticated
         }
+        if is_authenticated:
+            data['username'] = request.user.username
         return Response(data)

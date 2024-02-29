@@ -23,12 +23,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_json_widget',
     'rest_framework',
+    'rest_framework.authtoken',
     'shop',
     'home',
     'accounts',
     'cart',
     'shop.api',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

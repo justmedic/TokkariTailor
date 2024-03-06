@@ -13,7 +13,7 @@ class TestUserRegistration(APITestCase):
         """
         url = reverse('accounts:user-register')
         data = {
-            'username': 'New_test_user',
+            'username': '',
             'first_name': 'New',
             'email': 'newuser@example.com',
             'password': 'newpassword',
@@ -21,6 +21,7 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue('message' in response.data)
         self.assertEqual(response.data['message'], 'User has been registered successfully')
@@ -31,7 +32,7 @@ class TestUserRegistration(APITestCase):
         """
         url = reverse('accounts:user-register')
         data = {
-            'username': 'testuser',
+            'username': '',
             'first_name': 'Test',
             'email': 'testuser@example.com',
             'password': 'testpassword',
@@ -39,7 +40,7 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
-        print(response.data)
+        # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('password2' in response.data)
 
@@ -47,10 +48,10 @@ class TestUserRegistration(APITestCase):
         """
         Тестирование регистрации пользователя, который уже существует.
         """
-        User.objects.create_user('existinguser', 'existingemail@example.com', 'existingpassword')
+        User.objects.create_user('existingemail@example.com', 'existingemail@example.com', 'existingpassword')
         url = reverse('accounts:user-register')
         data = {
-            'username': 'existinguser',
+            'username': 'existingemail@example.com',
             'first_name': 'Existing',
             'email': 'existingemail@example.com',
             'password': 'existingpassword',
@@ -58,14 +59,14 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
-        print(response.data)
+        # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('username' in response.data or 'email' in response.data)
 
 
 class TestUserLoginLogout(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword123', email = 'testemail@example.com')
+        self.user = User.objects.create_user(username='testemail@example.com', password='testpassword123', email = 'testemail@example.com')
         self.login_url = reverse('accounts:user-login')
         self.logout_url = reverse('accounts:user-logout_user')
 
@@ -74,7 +75,7 @@ class TestUserLoginLogout(APITestCase):
         Тестирование успешного входа пользователя.
         """
         data = {
-            'username': 'testuser',
+            'username': 'testemail@example.com',
             'password': 'testpassword123'
         }
         response = self.client.post(self.login_url, data, format='json')
@@ -86,7 +87,7 @@ class TestUserLoginLogout(APITestCase):
         Тестирование входа с неверными данными пользователя.
         """
         data = {
-            'username': 'testuser',
+            'username': 'testemail@example.com',
             'password': 'wrongpassword'
         }
         response = self.client.post(self.login_url, data, format='json')
@@ -98,7 +99,7 @@ class TestUserLoginLogout(APITestCase):
         """
         # Сначала выполним вход
         login_data = {
-            'username': 'testuser',
+            'username': 'testemail@example.com',
             'password': 'testpassword123'
         }
         login_response = self.client.post(self.login_url, login_data, format='json')

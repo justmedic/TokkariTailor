@@ -13,7 +13,7 @@ class TestUserRegistration(APITestCase):
         """
         url = reverse('accounts:user-register')
         data = {
-            'username': 'newuser',
+            'username': 'New_test_user',
             'first_name': 'New',
             'email': 'newuser@example.com',
             'password': 'newpassword',
@@ -39,7 +39,7 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
-        # print(response.data)
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('password2' in response.data)
 
@@ -58,6 +58,7 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('username' in response.data or 'email' in response.data)
 
@@ -66,7 +67,7 @@ class TestUserLoginLogout(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpassword123', email = 'testemail@example.com')
         self.login_url = reverse('accounts:user-login')
-        self.logout_url = reverse('accounts:user-logout')
+        self.logout_url = reverse('accounts:user-logout_user')
 
     def test_user_login(self):
         """

@@ -34,17 +34,17 @@ class ProductTests(APITestCase):
         url = reverse('products-filtered')  
 
         response = self.client.get(url, {'characteristics__color': 'red'})
-        logger.info(f"Response data: {response.data}") 
+        # logger.info(f"Response data: {response.data}") 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)  
 
         response = self.client.get(url, {'characteristics__brand': 'BrandX'})
-        logger.info(f"Response data: {response.data}")  
+        # logger.info(f"Response data: {response.data}")  
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1) 
 
         response = self.client.get(url, {'characteristics__color': 'red', 'characteristics__size': 'M'})
-        logger.info(f"Response data: {response.data}") 
+        # logger.info(f"Response data: {response.data}") 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  
 

@@ -20,7 +20,7 @@ class HomeAPIView(APIView):
             'user_reg' : f'{settings.SITE_URL}/accounts/user/register',
             'user_log' : f'{settings.SITE_URL}/accounts/user/login',
             'user_logount' : f'{settings.SITE_URL}/accounts/user/logout_user',
-            'cart_url' : f'None',
+            'cart_url' : f'{settings.SITE_URL}/cart/user_cart/',
             'contats_url' :f'None',
             'is_authenticated': is_authenticated
         }

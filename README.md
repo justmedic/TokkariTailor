@@ -7,6 +7,7 @@ git clone https://github.com/justmedic/TokkariTailor
 Войти в директорию
 ```
 cd Tokkaritailor
+cd backend
 ```
 
 Обязательно нужно сделать миграции (по отдельности потому что оно работрает с помощью древних шизобогов)

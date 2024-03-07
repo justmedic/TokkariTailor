@@ -5,10 +5,9 @@ WORKDIR /backend
 COPY backend/requirements.txt /backend/
 
 RUN pip install -r requirements.txt
-
 COPY backend/ /backend/
+COPY init.sh /backend/  
+RUN chmod +x /backend/init.sh
 
-RUN chmod +x init.sh
-ENTRYPOINT ["./init.sh"]
-
+ENTRYPOINT ["/backend/init.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

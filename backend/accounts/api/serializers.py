@@ -2,34 +2,48 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from accounts.models import CustomUser
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
+    phone = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     password2 = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
 
     class Meta:
-        model = User
-        fields = ['email', 'password', 'password2']
+        model = CustomUser
+        fields = ['email', 'phone', 'password', 'password2']
     
     def validate_email(self, value):
         lower_email = value.lower()
-        if User.objects.filter(email=lower_email).exists():
+        if CustomUser.objects.filter(email=lower_email).exists():
             raise serializers.ValidationError("Этот email уже зарегистрирован.")
         return lower_email
+    
+    def validate_phone(self, value):
+        if CustomUser.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("Этот телефон уже зарегестрирован")
+        return value
+    
 
-    def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({"password2": "Пароли не совпадают."})
-        return data
+    def validate(self, value):
+        if 'password' in value and 'password2' in value:
+            if value['password'] != value['password2']:
+                raise serializers.ValidationError({"password2": "Пароли не совпадают."})
+        else:
+            raise serializers.ValidationError("Требуется указать оба пароля.")
+        return value
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        validated_data['email'] = validated_data.pop('email').lower()
-        # Используем email как username
-        validated_data['username'] = validated_data['email']
-        user = User.objects.create_user(**validated_data)
-        user.set_password(validated_data['password'])
+        user = CustomUser.objects.create_user(
+            
+            username = validated_data.get('email').lower(),
+            email=validated_data.get('email').lower(),
+            phone=validated_data.get('phone'),
+            password=validated_data.get('password')
+        
+        )
         user.save()
         return user
 

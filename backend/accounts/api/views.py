@@ -2,19 +2,17 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from .serializers import UserRegistrationSerializer, UserLoginSerializer
-from rest_framework.exceptions import APIException
 from django.core.exceptions import ObjectDoesNotExist
-
+from accounts.models import CustomUser
 
 
 class UserViewSet(viewsets.GenericViewSet):
     """
     ViewSet для пользователей, поддерживает регистрацию, вход и выход.
     """
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
 
     def get_serializer_class(self):
         """

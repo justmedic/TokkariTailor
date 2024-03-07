@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from django.contrib.auth.models import User
+from accounts.models import CustomUser
 from rest_framework.authtoken.models import Token
 
 
@@ -16,12 +16,12 @@ class TestUserRegistration(APITestCase):
             'username': '',
             'first_name': 'New',
             'email': 'newuser@example.com',
+            'phone' : '123',
             'password': 'newpassword',
             'password2': 'newpassword'  
         }
         
         response = self.client.post(url, data, format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue('message' in response.data)
         self.assertEqual(response.data['message'], 'User has been registered successfully')
@@ -34,13 +34,13 @@ class TestUserRegistration(APITestCase):
         data = {
             'username': '',
             'first_name': 'Test',
+            'phone' : '123',
             'email': 'testuser@example.com',
             'password': 'testpassword',
             'password2': 'wrongpassword' 
         }
         
         response = self.client.post(url, data, format='json')
-        # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('password2' in response.data)
 
@@ -48,7 +48,7 @@ class TestUserRegistration(APITestCase):
         """
         Тестирование регистрации пользователя, который уже существует.
         """
-        User.objects.create_user('existingemail@example.com', 'existingemail@example.com', 'existingpassword')
+        CustomUser.objects.create_user('existingemail@example.com', 'existingemail@example.com', 'existingpassword')
         url = reverse('accounts:user-register')
         data = {
             'username': 'existingemail@example.com',
@@ -59,14 +59,13 @@ class TestUserRegistration(APITestCase):
         }
         
         response = self.client.post(url, data, format='json')
-        # print(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue('username' in response.data or 'email' in response.data)
 
 
 class TestUserLoginLogout(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testemail@example.com', password='testpassword123', email = 'testemail@example.com')
+        self.user = CustomUser.objects.create_user(username='testemail@example.com', password='testpassword123', email = 'testemail@example.com')
         self.login_url = reverse('accounts:user-login')
         self.logout_url = reverse('accounts:user-logout_user')
 

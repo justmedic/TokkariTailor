@@ -36,6 +36,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         for param, value in characteristics_filter.items():
             json_field = param.split('__', 1)[1]  
             filtered_queryset = filtered_queryset.filter(**{f'characteristics__{json_field}': value})
+            
         try:
             serializer = self.get_serializer(filtered_queryset, many=True)
             return Response(serializer.data)

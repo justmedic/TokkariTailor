@@ -29,8 +29,12 @@ class ProductTests(APITestCase):
 
         Product.objects.create(category=category_electronics, name="Smartphone", slug="smartphone", description="Latest model", 
                                price=999.99, stock=30, available=True, characteristics={"warranty": "2 years", "brand": "BrandX"})
+        
                                
     def test_filter_products(self):
+        """
+        Тесты работы динамических фильтров
+        """
         url = reverse('products-filtered')  
 
         response = self.client.get(url, {'characteristics__color': 'red'})

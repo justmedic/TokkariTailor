@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from shop.models import Category, Product
+from cart.models import Cart, CartItem
 from .serializers import CategorySerializer, CategoryDetailSerializer, ProductSerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -17,7 +18,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    
+
     @action(detail=False, methods=['get'], url_path='detail/(?P<slug>[-\w]+)', url_name='product_detail')
     def product_detail(self, request, slug=None):
         product = get_object_or_404(self.get_queryset(), slug=slug)
@@ -42,4 +43,21 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'], url_path='add-to-cart', url_name='add_to_cart')
+    def add_to_cart(self, request, pk=None):
+        product = get_object_or_404(self.get_queryset(), pk=pk)
+        user = request.user
+        
+        if not user.is_authenticated:
+            return Response({'error': 'Аутентификация необходима'}, status=status.HTTP_403_FORBIDDEN)
+
+        cart, _ = Cart.objects.get_or_create(user=user)
+        
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={'quantity': 1})
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return Response({'message': 'Товар добавлен в корзину'}, status=status.HTTP_200_OK)
 

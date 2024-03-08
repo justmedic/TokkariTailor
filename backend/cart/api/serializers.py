@@ -12,12 +12,14 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
-    total_items = serializers.SerializerMethodField()
-    
+    total_cost = serializers.SerializerMethodField()
+   
     class Meta:
-        model = Cart
-        fields = ('id', 'user', 'created_at', 'updated_at', 'items', 'total_items')
-        read_only_fields = ('id', 'user', 'created_at', 'updated_at')
+       model = Cart
+       fields = ('id', 'user', 'created_at', 'updated_at', 'items', 'total_items', 'total_cost')
+       read_only_fields = ('id', 'user', 'created_at', 'updated_at')
+   
+    def get_total_cost(self, obj):
+        return obj.get_total_cost()
+    
 
-    def get_total_items(self, obj):
-        return sum(item.quantity for item in obj.items.all())

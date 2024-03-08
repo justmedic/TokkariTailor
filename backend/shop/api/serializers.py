@@ -14,16 +14,25 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     product_url = serializers.SerializerMethodField()
+    add_to_cart_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['category', 'name', 'product_url', 'slug', 'description', 'characteristics', 'price', 'stock', 'available', 'created', 'updated', 'images']
+        fields = ['category', 'name', 'product_url',  'add_to_cart_url', 'slug', 'description', 'characteristics', 'price', 'stock', 'available', 'created', 'updated', 'images']
         
     def get_product_url(self, obj):
         request = self.context.get('request')
         return request.build_absolute_uri(
             reverse('products-product_detail', kwargs={'slug': obj.slug})
         )
+    
+    def get_add_to_cart_url(self, obj):
+        request = self.context.get('request')
+        if request is not None:
+            return request.build_absolute_uri(
+                reverse('products-add_to_cart', kwargs={'pk': obj.pk})  
+            )
+        return None
 
 class CategorySerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='category-detail', read_only=True)

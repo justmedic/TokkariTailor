@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from cart.models import Cart, CartItem
-from shop.models import Product
+from cart.models import Cart, CartItem, Order
+
+
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.ReadOnlyField(source='product.name')
@@ -9,6 +10,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ('id', 'product', 'product_name', 'quantity', 'added_at')
         read_only_fields = ('id', 'added_at')
+
+
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -23,3 +26,12 @@ class CartSerializer(serializers.ModelSerializer):
         return obj.get_total_cost()
     
 
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'items', 'total_cost', 'is_paid']
+        read_only_fields = ('id', 'total_cost', 'is_paid')
+
+    def create(self, validated_data):
+        return super().create(validated_data)

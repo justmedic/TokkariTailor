@@ -21,6 +21,7 @@ class HomeAPIView(APIView):
             'user_log' : f'{settings.SITE_URL}/accounts/user/login',
             'user_logount' : f'{settings.SITE_URL}/accounts/user/logout_user',
             'cart_url' : f'{settings.SITE_URL}/cart/user_cart/',
+            'search_url': f'{settings.SITE_URL}/products/search/',
             'contats_url' :f'None',
             'is_authenticated': is_authenticated
         }

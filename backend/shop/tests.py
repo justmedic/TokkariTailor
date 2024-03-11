@@ -9,9 +9,7 @@ import logging
 logger = logging.getLogger(__name__) 
 
 class ProductTests(APITestCase):
-    """
-    Тестирует работу динамических фильтров 
-    """
+
 
     def setUp(self):
         category_clothes = Category.objects.create(name="Clothes", slug="clothes",
@@ -52,3 +50,24 @@ class ProductTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  
 
+
+    def test_search_products(self):
+        """
+        Тестирует работу поиска по продуктам
+        """
+        url = reverse('products-search')  
+
+        # Тестирование поиска по названию товара
+        response = self.client.get(url, {'q': 'T-Shirt'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)  # Ожидаем найти 1 товар с названием "T-Shirt".
+
+        # Тестирование поиска по описанию
+        response = self.client.get(url, {'q': 'blue'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)  # Ожидается найти 1 товар с описанием, содержащим "blue".
+
+        # Тестирование поиска, который не должен найти результаты
+        response = self.client.get(url, {'q': 'nonexistent'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)

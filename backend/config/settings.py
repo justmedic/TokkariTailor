@@ -116,3 +116,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGOUT_REDIRECT_URL = '/'
 
 SITE_URL = 'http://localhost:8000'
+
+TELEGRAM_ADMIN_CHAT_ID = ''
+
+TELEGRAM_TOKEN = '6534628866:AAE5M6fpmqCchphL7Fo1Nw7qrKIyYSnkGhg'

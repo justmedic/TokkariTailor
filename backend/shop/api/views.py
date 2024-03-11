@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -28,6 +29,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='filtered', url_name='filtered')
     def filtered(self, request):
+        """
+        Фильтры для характеристик товара
+        """
         filter_params = request.query_params.dict()
         characteristics_filter = {k: v for k, v in filter_params.items() if "characteristics__" in k}
         simple_filter_params = {k: v for k, v in filter_params.items() if "characteristics__" not in k}
@@ -44,8 +48,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+
     @action(detail=True, methods=['post'], url_path='add-to-cart', url_name='add_to_cart')
     def add_to_cart(self, request, pk=None):
+        """
+        Добавляет в корзину товар
+        """
         product = get_object_or_404(self.get_queryset(), pk=pk)
         user = request.user
         
@@ -61,3 +69,22 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({'message': 'Товар добавлен в корзину'}, status=status.HTTP_200_OK)
 
+
+    @action(detail = False, methods = ['get'], url_path = 'search', url_name = 'search')
+    def search(self, request):
+        """
+        Поисковик товара (ключевые слова в категориях, названии товара ии его характеристиках)
+        """
+        query = request.query_params.get('q', None)
+
+        if query is None:
+            return Response({'error' : 'Отсуствует поисковой запрос'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(characteristics__icontains=query)
+
+        )
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)

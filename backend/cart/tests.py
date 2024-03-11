@@ -1,12 +1,13 @@
 from django.urls import reverse
 from django.test import TestCase
 
-from rest_framework.test import APIClient
-from rest_framework import status
+from rest_framework.test import APIClient, APIRequestFactory
 
 from accounts.models import CustomUser
 from shop.models import Product, Category
 from cart.models import Cart, CartItem
+
+from shop.api.serializers import ProductSerializer
 
 class CartTestCase(TestCase):
     def setUp(self):
@@ -33,10 +34,16 @@ class CartTestCase(TestCase):
 
         cart_item = CartItem.objects.create(cart=self.cart, product=self.product, quantity=1)
         
-
         self.assertEqual(self.cart.items.count(), 1)
         self.assertTrue(self.cart.items.filter(product=self.product).exists())
         self.assertEqual(self.cart.items.get(product=self.product).quantity, 1)
+
+        factory = APIRequestFactory() # я хз че это опять блять сраный кастыль в этом джанго как же он бесит
+        request = factory.get('/')
+
+        product_info = ProductSerializer(self.product, context={'request': request}).data
+        print("Информация о продукте, добавленном в корзину:")
+        print(product_info)
 
     def test_add_multiple_items_to_cart(self):
 

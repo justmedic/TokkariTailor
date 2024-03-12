@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from shop.models import Category, Product
 from cart.models import Cart, CartItem
 from .serializers import CategorySerializer, CategoryDetailSerializer, ProductSerializer
+from shop.pagination import StandardResultsSetPagination
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -18,10 +19,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    pagination_class = StandardResultsSetPagination
 
 
     @action(detail=False, methods=['get'], url_path='detail/(?P<slug>[-\w]+)', url_name='product_detail')
     def product_detail(self, request, slug=None):
+        """
+        Генерит ссылку на детали продукта
+        """
         product = get_object_or_404(self.get_queryset(), slug=slug)
         serializer = self.get_serializer(product)
         return Response(serializer.data)
@@ -35,13 +40,21 @@ class ProductViewSet(viewsets.ModelViewSet):
         filter_params = request.query_params.dict()
         characteristics_filter = {k: v for k, v in filter_params.items() if "characteristics__" in k}
         simple_filter_params = {k: v for k, v in filter_params.items() if "characteristics__" not in k}
+
+        order_param = simple_filter_params.pop('order', None)
         
         filtered_queryset = self.queryset.filter(**simple_filter_params)
     
         for param, value in characteristics_filter.items():
             json_field = param.split('__', 1)[1]  
             filtered_queryset = filtered_queryset.filter(**{f'characteristics__{json_field}': value})
-            
+
+        if order_param:
+            if order_param == 'price_asc':
+                filtered_queryset = filtered_queryset.order_by('price')
+            elif order_param == 'price_desc':
+                filtered_queryset = filtered_queryset.order_by('-price') # потом можно сюда засунуть другие параметры фильтрации, когда сбор куки подключу
+         
         try:
             serializer = self.get_serializer(filtered_queryset, many=True)
             return Response(serializer.data)
@@ -88,3 +101,4 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(products, many=True)
         return Response(serializer.data)
+    

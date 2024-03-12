@@ -6,7 +6,7 @@
 #     context.bot.send_message(chat_id=chat_id, text=f"Ваш Telegram ID: {chat_id}")
 
 # def main():
-#     TOKEN = '6534628866:AAE5M6fpmqCchphL7Fo1Nw7qrKIyYSnkGhg'  # Замените YOUR_BOT_TOKEN на ваш токен от BotFather
+#     TOKEN = ''  # Замените YOUR_BOT_TOKEN на ваш токен от BotFather
 
 #     bot = Bot(TOKEN)
 #     updater = Updater(bot=bot)

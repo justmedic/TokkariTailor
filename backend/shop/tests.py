@@ -3,6 +3,10 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Product, Category
 import logging
+import timeit
+from faker import Faker
+import random
+from statistics import mean, stdev
 
 
 
@@ -125,3 +129,93 @@ class ProductTests(APITestCase):
         self.assertEqual(response_next_page.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response_next_page.data['results']), 20)  
 
+    def test_filter_products_by_min_price_performance(self):
+        """
+        Стресс-тестирование фильтрации товаров по минимальной цене
+        с измерением времени отклика.
+        """
+        def do_request():
+            self.client.get(reverse('products-filtered'), {'price__gte': 50})
+        
+        number_of_requests = 1000
+        
+
+        total_time = timeit.timeit(do_request, number=number_of_requests)
+        
+        average_time = total_time / number_of_requests
+        logger.info(f"Среднее время отклика при {number_of_requests} запросах: {average_time} секунд.")
+        
+        self.assertLess(average_time, 0.1, "Среднее время отклика превышает предельно допустимое значение.")
+
+
+class ProductStressTests(APITestCase):
+
+    def setUp(self):
+        faker = Faker()  
+        
+
+        category_clothes = Category.objects.create(name="Clothes", slug="clothes",
+                                                   characteristics_template={"color": "", "size": ""})
+        
+        category_electronics = Category.objects.create(name="Electronics", slug="electronics",
+                                                       characteristics_template={"warranty": "1 year", "brand": ""})
+        
+        categories = [category_clothes, category_electronics]
+        characteristics_clothes = ["red", "blue", "green", "black"], ["S", "M", "L", "XL"]
+        characteristics_electronics = ["1 year", "2 years", "3 years"], ["BrandX", "BrandY", "BrandZ"]
+        
+        print('Запись тестовых товаров в бд')
+        for _ in range(1000):
+            category = random.choice(categories)
+            
+            if category == category_clothes:
+                color, size = random.choices(characteristics_clothes[0]), random.choice(characteristics_clothes[1])
+                characteristics = {"color": color, "size": size}
+            else:
+                warranty, brand = random.choice(characteristics_electronics[0]), random.choice(characteristics_electronics[1])
+                characteristics = {"warranty": warranty, "brand": brand}
+            
+            Product.objects.create(
+                category=category,
+                name=faker.word(),  # Генерируем случайное название товара
+                slug=faker.slug(),  # Генерируем случайный slug
+                description=faker.text(),  # Генерируем случайное описание
+                price=faker.random_number(digits=4),  # Генерируем случайную цену
+                stock=faker.random_number(digits=3),  # Случайное количество на складе
+                available=faker.boolean(),  # Случайная доступность
+                characteristics=characteristics
+            )
+        print('запись окончена')
+
+    def test_filter_products_staff_performance(self):
+        """Проведение стресс-теста на фильтрацию товаров."""
+
+        def do_request_and_measure_time():
+            start_time = timeit.default_timer()
+            self.client.get(reverse('products-filtered'), {'price__gte': 50})
+            end_time = timeit.default_timer()
+            return end_time - start_time
+        
+        number_of_requests = 10  # изменить для выбора нагрузки на сервер
+
+        times = []
+        print('Начаты тестовые реквесты')
+        for _ in range(number_of_requests):
+            elapsed_time = do_request_and_measure_time()
+            times.append(elapsed_time)
+
+        avg_time = mean(times)
+        std_dev_time = stdev(times) if len(times) > 1 else 0
+
+
+        logger.info(f"Выполнено {number_of_requests} запросов.")
+        logger.info(f"Среднее время отклика: {avg_time:.4f} сек.")
+        logger.info(f"Стандартное отклонение времени отклика: {std_dev_time:.4f} сек.")
+
+    
+        expected_max_avg_time = 0.5  
+        expected_max_std_dev = 0.1  
+
+
+        self.assertLess(avg_time, expected_max_avg_time, "Среднее время отклика выше ожидаемого.")
+        self.assertLess(std_dev_time, expected_max_std_dev, "Дисперсия времени отклика выше ожидаемой.")

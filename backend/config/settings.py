@@ -1,14 +1,18 @@
-
 import os
 from pathlib import Path
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
+try:
+    from .local_settings import *
+except ImportError:
+    pass
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-px=3zzpaeor%w17fljt()jw%ntza4#xm%xvk&&g=d$*nwkm2_('
+
 
 DEBUG = True
 
@@ -21,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'django_json_widget',
     'rest_framework',
     'rest_framework.authtoken',
@@ -118,6 +123,3 @@ LOGOUT_REDIRECT_URL = '/'
 
 SITE_URL = 'http://localhost:8000'
 
-TELEGRAM_ADMIN_CHAT_ID = ''
-
-TELEGRAM_TOKEN = '6534628866:AAE5M6fpmqCchphL7Fo1Nw7qrKIyYSnkGhg'

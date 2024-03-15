@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from cart.models import Cart, CartItem, Order
+from django.db import transaction
 
 
 
@@ -25,13 +26,15 @@ class CartSerializer(serializers.ModelSerializer):
     def get_total_cost(self, obj):
         return obj.get_total_cost()
     
+    
 
-
-class OrderCreateSerializer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'items', 'total_cost', 'is_paid']
-        read_only_fields = ('id', 'total_cost', 'is_paid')
+        fields = ['id', 'user', 'items', 'created_at', 'updated_at', 'is_paid', 'total_cost']
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        items = validated_data.pop('items')
+        order = Order.objects.create(**validated_data)
+        order.items.set(items)
+        return order

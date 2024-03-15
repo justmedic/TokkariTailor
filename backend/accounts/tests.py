@@ -105,7 +105,6 @@ class TestUserLoginLogout(APITestCase):
         token = login_response.data['token']
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token}')
 
-        # Теперь выходим
         logout_response = self.client.post(self.logout_url)
         self.assertEqual(logout_response.status_code, status.HTTP_204_NO_CONTENT)
         

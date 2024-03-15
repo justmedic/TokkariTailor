@@ -19,4 +19,4 @@ venv.bak/
 **/migrations/**
 /migrations/
 
-/local_settings.py
+config.local_settings.py

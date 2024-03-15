@@ -17,3 +17,6 @@ venv.bak/
 
 .migrations/
 **/migrations/**
+/migrations/
+
+/local_settings.py

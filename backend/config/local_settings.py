@@ -10,3 +10,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tokkaritailor@gmail.com'
 EMAIL_HOST_PASSWORD = 'Kontr123XC1'
+EMAIL_FILE_PATH = 'tmp/emails'

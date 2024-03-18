@@ -7,8 +7,7 @@ logging.basicConfig(level=logging.INFO)
 try:
     from .local_settings import *
 except ImportError:
-    pass
-
+    print('Ошибка импорта локальных настроек. ')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

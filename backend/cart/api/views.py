@@ -6,6 +6,8 @@ from cart.models import Cart, CartItem, Order
 from .serializers import CartSerializer, CartItemSerializer
 from django.db import transaction
 
+from shop.api.serializers import ProductSerializer
+
 
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -89,14 +91,28 @@ class CartItemViewSet(viewsets.ModelViewSet):
         user = request.user
         user_cart = Cart.objects.filter(user=user)
         cart_items = CartItem.objects.filter(cart__in=user_cart)
-        
         if not cart_items.exists():
             return Response({'error': 'Корзина пуста'}, status=status.HTTP_400_BAD_REQUEST)
         
         total_cost = 0
+        product_info_list = []
+
         for item in cart_items:
+
+            # это вот все нужно шобы оно выдавало полную ссылку на товар
+            serializer = ProductSerializer(item.product, context={'request': request})
+            product_url = serializer.get_product_url(item.product)
+
             total_cost += item.quantity * item.product.price
-        
+            product_characteristics = item.product.characteristics if item.product.characteristics else "Характеристики продукта не указаны."
+            product_info_list.append({
+                'Товар': item.product.name,
+                'Ссылка' : product_url,
+                'Количество': item.quantity,
+                'Цена за единицу': item.product.price,
+                'Характеристики': product_characteristics,
+            })
+    
         with transaction.atomic():
             order = Order.objects.create(user=user, total_cost=total_cost)
             order.items.set(cart_items)
@@ -105,5 +121,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 item.cart.save()
                 item.save()
         
+        print(f'product_info_list: {product_info_list}\n user:{user}\n user_phone:{user.phone}\nOrder_id: {order.id}') # заменить это говно на отправку инфы на сервер
+                
+
         return Response({'message': 'Order has been created successfully', 'order_id': order.id}, status=status.HTTP_201_CREATED)
 

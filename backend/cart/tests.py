@@ -6,7 +6,7 @@ from rest_framework.test import APIClient, APIRequestFactory
 
 from accounts.models import CustomUser
 from shop.models import Product, Category
-from cart.models import Cart, CartItem
+from cart.models import Cart, CartItem, Order
 
 from shop.api.serializers import ProductSerializer
 
@@ -14,6 +14,7 @@ class CartTestCase(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
         email='testemail@example.com',
+        phone = '89991231234',
         username='testemail@example.com',
         password='testpassword123')
         self.client = APIClient()
@@ -80,15 +81,33 @@ class CartTestCase(TestCase):
         """
         Тестирует успешное создание заказа из элементов в корзине.
         """
-        # Добавляем элемент в корзину, чтобы она не была пустой
+
         CartItem.objects.create(cart=self.cart, product=self.product, quantity=1)
         
         url = reverse('cart:cartitem-create_order')
 
         response = self.client.post(url)
-        print(f'{response.data}\n')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('message', response.data)
         self.assertEqual(response.data['message'], 'Order has been created successfully')
         self.assertIn('order_id', response.data)
 
+        order_id = response.data['order_id']
+
+        order = Order.objects.get(id=order_id)
+        
+        # print("Созданный заказ содержит следующие элементы:")
+        # for item in order.items.all():
+        #     product = item.product
+        #     characteristics = product.characteristics 
+
+        #     print(f"Товар: {product.name}, Количество: {item.quantity}, Цена за единицу: {product.price}")
+        #     if characteristics:
+        #         print("Характеристики продукта:")
+        #         for key, value in characteristics.items():
+        #             print(f"    {key}: {value}")
+        #     else:
+        #         print("    Характеристики продукта не указаны.")
+        
+
+        # print(f"Общая стоимость заказа: {order.total_cost}")

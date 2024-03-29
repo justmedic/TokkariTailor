@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 try:
-    from .local_settings import *
+    from .local_setting import *
 except ImportError:
     print('Ошибка импорта локальных настроек. ')
 

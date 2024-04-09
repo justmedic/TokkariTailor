@@ -7,6 +7,8 @@ from shop.models import Category, Product
 from cart.models import Cart, CartItem
 from .serializers import CategorySerializer, CategoryDetailSerializer, ProductSerializer
 from shop.pagination import StandardResultsSetPagination
+from django.utils.decorators import method_decorator
+from config.cache import cache_heavy_get_requests
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -21,7 +23,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = StandardResultsSetPagination
 
-
+    @method_decorator(cache_heavy_get_requests(timeout=86400))
     @action(detail=False, methods=['get'], url_path='detail/(?P<slug>[-\w]+)', url_name='product_detail')
     def product_detail(self, request, slug=None):
         """
@@ -31,7 +33,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(product)
         return Response(serializer.data)
 
-
+    @method_decorator(cache_heavy_get_requests(timeout=86400))
     @action(detail=False, methods=['get'], url_path='filtered', url_name='filtered')
     def filtered(self, request):
         """
@@ -60,7 +62,6 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
 
     @action(detail=True, methods=['post'], url_path='add-to-cart', url_name='add_to_cart')
     def add_to_cart(self, request, pk=None):
@@ -82,7 +83,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({'message': 'Товар добавлен в корзину'}, status=status.HTTP_200_OK)
 
-
+    @method_decorator(cache_heavy_get_requests(timeout=86400))
     @action(detail = False, methods = ['get'], url_path = 'search', url_name = 'search')
     def search(self, request):
         """

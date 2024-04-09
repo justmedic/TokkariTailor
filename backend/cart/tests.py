@@ -92,22 +92,3 @@ class CartTestCase(TestCase):
         self.assertEqual(response.data['message'], 'Order has been created successfully')
         self.assertIn('order_id', response.data)
 
-        order_id = response.data['order_id']
-
-        order = Order.objects.get(id=order_id)
-        
-        # print("Созданный заказ содержит следующие элементы:")
-        # for item in order.items.all():
-        #     product = item.product
-        #     characteristics = product.characteristics 
-
-        #     print(f"Товар: {product.name}, Количество: {item.quantity}, Цена за единицу: {product.price}")
-        #     if characteristics:
-        #         print("Характеристики продукта:")
-        #         for key, value in characteristics.items():
-        #             print(f"    {key}: {value}")
-        #     else:
-        #         print("    Характеристики продукта не указаны.")
-        
-
-        # print(f"Общая стоимость заказа: {order.total_cost}")

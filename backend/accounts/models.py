@@ -34,7 +34,7 @@ class UserRegistrationForm(forms.ModelForm):
         return cd['password2']
 
     def save(self, commit=True):
-        user = super(UserRegistrationForm, self).save(commit=False)
+        user: UserRegistrationForm  = super(UserRegistrationForm, self).save(commit=False)
 
         user.email = self.cleaned_data['email']
         user.phone = self.cleaned_data['phone']

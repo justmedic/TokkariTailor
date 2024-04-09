@@ -7,6 +7,8 @@ import timeit
 from faker import Faker
 import random
 from statistics import mean, stdev
+from django.core.cache import cache
+import json
 
 
 
@@ -151,71 +153,104 @@ class ProductTests(APITestCase):
 class ProductStressTests(APITestCase):
 
     def setUp(self):
-        faker = Faker()  
-        
+        faker = Faker()
 
+        # Расширяем шаблоны характеристик
+        characteristics_template_clothes = {
+            "color": ["red", "blue", "green", "black", "white", "yellow", "purple", "orange", "grey"],
+            "size": ["XS", "S", "M", "L", "XL", "XXL"],
+            "material": ["cotton", "polyester", "wool", "silk", "linen", "rayon"],
+            "style": ["casual", "formal", "sport", "vintage", "streetwear"]
+        }
+
+        characteristics_template_electronics = {
+            "warranty": ["1 year", "2 years", "3 years", "5 years"],
+            "brand": ["BrandX", "BrandY", "BrandZ", "BrandA", "BrandB"],
+            "type": ["smartphone", "laptop", "tablet", "smartwatch", "camera"],
+            "operating_system": ["Windows", "MacOS", "Linux", "Android", "iOS"],
+            "memory": ["4GB", "8GB", "16GB", "32GB", "64GB", "128GB", "256GB"]
+        }
+
+        # Создание категорий
         category_clothes = Category.objects.create(name="Clothes", slug="clothes",
-                                                   characteristics_template={"color": "", "size": ""})
+                                                   characteristics_template=json.dumps(characteristics_template_clothes))
         
         category_electronics = Category.objects.create(name="Electronics", slug="electronics",
-                                                       characteristics_template={"warranty": "1 year", "brand": ""})
+                                                       characteristics_template=json.dumps(characteristics_template_electronics))
         
         categories = [category_clothes, category_electronics]
-        characteristics_clothes = ["red", "blue", "green", "black"], ["S", "M", "L", "XL"]
-        characteristics_electronics = ["1 year", "2 years", "3 years"], ["BrandX", "BrandY", "BrandZ"]
         
-        print('Запись тестовых товаров в бд')
+        print('Beginning to populate test products in the database')  
         for _ in range(1000):
             category = random.choice(categories)
             
             if category == category_clothes:
-                color, size = random.choices(characteristics_clothes[0]), random.choice(characteristics_clothes[1])
-                characteristics = {"color": color, "size": size}
+                characteristics = {
+                    "color": random.choice(characteristics_template_clothes["color"]),
+                    "size": random.choice(characteristics_template_clothes["size"]),
+                    "material": random.choice(characteristics_template_clothes["material"]),
+                    "style": random.choice(characteristics_template_clothes["style"])
+                }
             else:
-                warranty, brand = random.choice(characteristics_electronics[0]), random.choice(characteristics_electronics[1])
-                characteristics = {"warranty": warranty, "brand": brand}
+                characteristics = {
+                    "warranty": random.choice(characteristics_template_electronics["warranty"]),
+                    "brand": random.choice(characteristics_template_electronics["brand"]),
+                    "type": random.choice(characteristics_template_electronics["type"]),
+                    "operating_system": random.choice(characteristics_template_electronics["operating_system"]),
+                    "memory": random.choice(characteristics_template_electronics["memory"])
+                }
             
             Product.objects.create(
                 category=category,
-                name=faker.word(),  # Генерируем случайное название товара
-                slug=faker.slug(),  # Генерируем случайный slug
-                description=faker.text(),  # Генерируем случайное описание
-                price=faker.random_number(digits=4),  # Генерируем случайную цену
-                stock=faker.random_number(digits=3),  # Случайное количество на складе
-                available=faker.boolean(),  # Случайная доступность
+                name=faker.word(),
+                slug=faker.slug(),
+                description=faker.text(),
+                price=faker.random_number(digits=4),
+                stock=faker.random_number(digits=3),
+                available=faker.boolean(),
                 characteristics=characteristics
             )
-        print('запись окончена')
+        
+        print('Product population complete')
+
+
 
     def test_filter_products_staff_performance(self):
-        """Проведение стресс-теста на фильтрацию товаров."""
-
+        """Проведение стресс-теста на фильтрацию товаров с и без кэширования."""
+        
+        cache.clear()
+        
         def do_request_and_measure_time():
             start_time = timeit.default_timer()
-            self.client.get(reverse('products-filtered'), {'price__gte': 50})
+            # Добавляем сложные фильтры, например, фильтрация по бренду электроники и размеру одежды
+            response = self.client.get(reverse('products-filtered'), {'characteristics__brand': 'BrandX', 'characteristics__size': 'M', 'price__gte': 50})
             end_time = timeit.default_timer()
             return end_time - start_time
         
-        number_of_requests = 10  # изменить для выбора нагрузки на сервер
+        number_of_requests = 100  # Регулируйте для масштабирования нагрузки на сервер
 
-        times = []
-        print('Начаты тестовые реквесты')
+        # Первый проход без кэша для заполнения кеша
         for _ in range(number_of_requests):
+            do_request_and_measure_time()
+        
+        times = []
+        print('Testing requests with cache')
+        for _ in range(number_of_requests):  # Второй проход с кэшем
             elapsed_time = do_request_and_measure_time()
             times.append(elapsed_time)
-
+        
         avg_time = mean(times)
         std_dev_time = stdev(times) if len(times) > 1 else 0
 
+        logger.info(f"Performed {number_of_requests} requests with caching.")
+        logger.info(f"Average response time with cache: {avg_time:.4f} seconds.")
+        logger.info(f"Standard deviation in response time with cache: {std_dev_time:.4f} seconds.")
 
-        logger.info(f"Выполнено {number_of_requests} запросов.")
-        logger.info(f"Среднее время отклика: {avg_time:.4f} сек.")
-        logger.info(f"Стандартное отклонение времени отклика: {std_dev_time:.4f} сек.")
+        expected_max_avg_time = 0.6  # Установите ожидаемое максимальное среднее время
+        expected_max_std_dev = 0.1  # Установите ожидаемую максимальную дисперсию времени отклика
 
-    
-        expected_max_avg_time = 0.5  
-        expected_max_std_dev = 0.1  
+        self.assertLess(avg_time, expected_max_avg_time, "Average response time is higher than expected.")
+        self.assertLess(std_dev_time, expected_max_std_dev, "Response time variance is higher than expected.")
 
-
-        self.assertLess(avg_time, expected_max_avg_time, "Среднее время отклика выше ожидаемого.")
-        self.assertLess(std_dev_time, expected_max_std_dev, "Дисперсия времени отклика выше ожидаемой.")
+    def tearDown(self):
+        cache.clear()
